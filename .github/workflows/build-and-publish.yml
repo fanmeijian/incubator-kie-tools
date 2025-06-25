@@ -1,39 +1,43 @@
 name: Build KIE Editors Standalone
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'pnpm'
-
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
-        version: 9.3.0
+        version: 9.3.0  # ✅ 指定项目要求的 pnpm 版本
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'  # ✅ 项目要求 Node >= 20
+        cache: 'pnpm'
+
+    - name: Check versions
+      run: |
+        node -v
+        pnpm -v
 
     - name: Install dependencies
-      run: |
-        pnpm install -r --filter scripts...
-        pnpm -F scripts/run-script-if run build
-        pnpm -F scripts/build-env run build
-        pnpm install --no-frozen-lockfile
+      run: pnpm install
       env:
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
-    - name: Build standalone editors
+    - name: Build KIE Editors Standalone
       run: pnpm build:standalone
 
-    - name: Upload artifact
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: kie-editors-dist
