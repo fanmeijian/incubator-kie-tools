@@ -1,0 +1,40 @@
+name: Build KIE Editors Standalone
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Build KIE Editors Standalone
+      run: pnpm build:standalone
+
+    - name: Copy dist to output folder
+      run: |
+        mkdir dist-output
+        cp -r packages/kie-editors-standalone/dist/* dist-output/
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: kie-editors-dist
+        path: dist-output/
