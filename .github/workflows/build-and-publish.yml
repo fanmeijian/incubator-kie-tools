@@ -2,43 +2,31 @@ name: Build KIE Editors Standalone
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout source
+        uses: actions/checkout@v3
 
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 9.3.0  # ✅ 指定项目要求的 pnpm 版本
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'  # ✅ 项目要求 Node >= 20
-        cache: 'pnpm'
+      - name: Install root dependencies
+        run: npm ci
 
-    - name: Check versions
-      run: |
-        node -v
-        pnpm -v
+      - name: Build entire monorepo
+        run: npm run build:prod
 
-    - name: Install dependencies
-      run: pnpm install
-      env:
-        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
-
-    - name: Build KIE Editors Standalone
-      run: pnpm build:standalone
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: kie-editors-dist
-        path: packages/kie-editors-standalone/dist/
+      - name: Upload kie-editors-standalone dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: kie-editors-standalone-dist
+          path: packages/kie-editors-standalone/dist
